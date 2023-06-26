@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Infrastructure for the virtual compagnie
+Parameters:
+  ImageID:
+    Description: AMI to use ng ami-053b0d53c279acc90
+    Default: ami-053b0d53c279acc90
+    Type: String
+  VpcID:
+    Description: VPC used by SG
+    Type: String
+Resources:
+  Webserver:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: !Ref ImageID #ami-053b0d53c279acc90
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+      KeyName: mosesm
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          apt install nginx  
+          service nginx start     
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcID
+      GroupDescription: 'Open port 80'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'
+Outputs:
+  PublicIp:
+    Value: !GetAtt Webserver.PublicIp
